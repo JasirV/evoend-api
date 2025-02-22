@@ -25,8 +25,7 @@ const register = async (req, res) => {
       name, gender, age, email, phone, password: hashedPassword,
       religion, caste, region, isVerified: false,otp
     });
-    // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.status(201).json({ message: `You Checkit Mail you can verify ${email}`});
+    res.status(200).json({ message: `You Checkit Mail you can verify ${email}`});
   } catch (error) {
     res.status(500).json({ error: 'Registration failed.' });
   }
@@ -36,13 +35,30 @@ const register = async (req, res) => {
 //Otp Verification
 
 
-const otpVerificaton=async(req,res)=>{
+const otpVerification = async (req, res) => {
   try {
-    
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ error: 'Email & OTP required.' });
+    const [user] = await User.aggregate([
+      { $match: { email } },
+      { $project: { otp: 1, isVerified: 1 } }
+    ]);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+    if (!user.otp) return res.status(400).json({ error: 'OTP expired. Request a new one.' });
+    if (user.isVerified) return res.status(400).json({ error: 'User already verified.' });
+    if (user.otp !== otp) return res.status(400).json({ error: 'Invalid OTP. Try again.' });
+    const updatedUser = await User.findOneAndUpdate(
+      { email },
+      { $set: { isVerified: true }, $unset: { otp: "" } },
+      { new: true }
+    );
+    const token=jwt.sign({id: updatedUser._id},process.env.JWT_SECRET,{ expiresIn:'7d'});
+    res.status(200).json({ message: 'Verification successful!',token });
   } catch (error) {
-    res.status(500).json({error:"Verification Failed"})
+    console.error('OTP Verification Error:', error);
+    res.status(500).json({ error: 'Verification failed. Please try later.' });
   }
-}
+};
 
 
 // Login
@@ -62,4 +78,4 @@ const login = async (req, res) => {
   }
 };
 
-module.exports={register,login}
+module.exports={register,login,otpVerification}
