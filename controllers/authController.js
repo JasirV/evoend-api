@@ -1,6 +1,6 @@
 const User = require('../model/User');
 const OTP = require('../model/Otp');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { sendOTPEmail } = require('../utils/mailer');
 const otpGenerateore  = require('../services/auth/otpGeneratore');
@@ -14,7 +14,7 @@ const register = async (req, res) => {
     if (existingUser) return res.status(400).json({ error: 'User already exists.' });
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log('jai')
-    const otp= otpGenerateore()
+    const otp= otpGenerateore() 
     console.log(otp,'thjo')
     sendOTPEmail(email,otp)
 
@@ -67,8 +67,8 @@ const login = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: 'Invalid credentials.' });
-
-    const isMatch = await bcrypt.compare(password, user.password);
+    if(!user.isVerified) return res.status(404).json({error:"please verify you accound "})
+      const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials.' });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
