@@ -62,6 +62,12 @@ const userSchema = new mongoose.Schema({
     education: String,
     occupation: String,
   },
+  otp: String,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    expires: 300, 
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
