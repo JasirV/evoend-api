@@ -3,6 +3,7 @@ const morgan = require('morgan')
 const cors = require("cors");
 const bodyParser = require('body-parser');
 const authRoutere=require('./routes/auth')
+const postRouter=require('./routes/post')
 
 const app =express()
 app.use(cors());
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 app.use('/api/auth',authRoutere)
+app.use('/api/post',postRouter)
 
 
 
