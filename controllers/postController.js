@@ -71,5 +71,59 @@ const deletePost =async (req,res)=>{
         return res.status(500).json({status:'failed',message:"Internal sever error",error:error.message})
     }
 }
+const likePost = async (req, res) => {
+    const { postId } = req.params;
+    const { userId } = req.body;
+  
+    if (!postId || !userId) {
+      return res.status(400).json({ message: 'Post ID and User ID are required.' });
+    }
+  
+    try {
+      const post = await Post.findById(postId);
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found.' });
+      }
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+      const likedIndex = post.likes.findIndex((id) => id.equals(userObjectId));
+  
+      if (likedIndex === -1) {
+        post.likes.push(userObjectId);
+      } else {
+        post.likes.splice(likedIndex, 1);
+      }
+          await post.save();
+      res.status(200).json(post);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error });
+    }
+  };
+  const savePost = async (req, res) => {
+    const { postId } = req.params;
+    const { userId } = req.body;
+    if (!postId || !userId) {
+      return res.status(400).json({ message: 'Post ID and User ID are required.' });
+    }
+    try {
+      const post = await Post.findById(postId);
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found.' });
+      }
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+      const savedIndex = post.saves.findIndex((id) => id.equals(userObjectId));
+  
+      if (savedIndex === -1) {
+        post.saves.push(userObjectId);
+      } else {
+        post.saves.splice(savedIndex, 1);
+      }
+  
+      await post.save();
+      res.status(200).json(post);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error });
+    }
+  };
+  
 
-module.exports = {createPost,getPost,UpdatePost,deletePost};
+module.exports = {createPost,getPost,UpdatePost,deletePost,likePost,savePost};
