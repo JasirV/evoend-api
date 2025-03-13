@@ -3,10 +3,10 @@ const { createPost, getPost, deletePost, UpdatePost, likePost, savePost } = requ
 const authMiddleware = require('../middleware/authMiddleware')
 const Router =express.Router()
 
-Router.post('/',createPost)
+Router.post('/',authMiddleware,createPost)
 .get('/:id',getPost)
-.delete('/:id',deletePost)
-.put('/:id',UpdatePost)
+.delete('/:id',authMiddleware,deletePost)
+.put('/:id',authMiddleware,UpdatePost)
 .post('/like/:postId', authMiddleware, likePost)
 .post('/save/:postId', authMiddleware, savePost)
 
